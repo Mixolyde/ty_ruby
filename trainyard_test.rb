@@ -19,7 +19,14 @@ class DataStructureTest < Test::Unit::TestCase
     assert_equal(5, Yard.yard2.list_tracks.size)
     assert_equal(3, Yard.yard3.list_tracks.size)
     
-    puts "Track list: #{Yard.yard2.list_tracks}"
+    assert_equal(2, Yard.yard1.get_neighbor_tracks(:t1).size)
+    assert_equal(2, Yard.yard1.get_neighbor_tracks(:t2).size)
+    assert_equal(2, Yard.yard1.get_neighbor_tracks(:t3).size)
+    assert_equal(1, Yard.yard1.get_neighbor_tracks(:t4).size)
+    assert_equal(3, Yard.yard1.get_neighbor_tracks(:t5).size)
+    assert_equal(2, Yard.yard1.get_neighbor_tracks(:t6).size)
+    
+    puts "Track list: #{Yard.yard1.list_tracks}"
   end
   
   def test_states
@@ -87,7 +94,9 @@ class DataStructureTest < Test::Unit::TestCase
         problem1.state.apply_move!(move).reverse_move!(move)) }
     
   end
-  
+end
+
+class SearchDataStructureTest < Test::Unit::TestCase    
   def test_states_already_seen?
     problem1 = Problem.problem1
     first_sstate = Solution_State.new(problem1.state, [])
@@ -106,7 +115,7 @@ class DataStructureTest < Test::Unit::TestCase
     }
     
   end
-  
+
   def test_equal_astar_states
     problem = Problem.problem3
     fringe_state = Astar_Solution_State.new(
@@ -259,6 +268,9 @@ class SearchTest < Test::Unit::TestCase
       Trainyard_Search.print_solution(problem, result)
       assert_equal(problem.goal, result.state)
     }
+    
+    #result = Trainyard_Search.iterative_deepening_search(Problem.problem2)
+    #Trainyard_Search.print_solution(Problem.problem2, result)
   end
 end
 
@@ -279,6 +291,12 @@ class Heuristic_Test < Test::Unit::TestCase
       problem3.state, [])
     astarstate = Astar_Solution_State.new(sstate, count)
     assert_not_nil(astarstate)
+    
+  end
+  
+  def test_dijkstra_all
+    dijkstra_hash = Dijkstra_Sum.dijkstra_all(Yard.yard1)
+    puts "Dijkstra_hash: #{dijkstra_hash}"
     
   end
 end

@@ -66,14 +66,13 @@ class Trainyard_Search_Astar
     # curry the heuristic proc with problem arguments
     h_curried = Proc.new {|state| heuristic.calculate_fvalue(state, problem.goal, problem.yard) }
     first_fvalue = h_curried[problem.state]
-    puts "Initial fvalue: #{first_fvalue}"
-    
+    #puts "Initial fvalue: #{first_fvalue}"
     fringe_state = Astar_Solution_State.new(
       Solution_State.new(problem.state, []), first_fvalue)
-    puts "Initial astar state #{fringe_state.to_s}"
     open_states = [fringe_state]
     closed_states = []
     done = false
+    puts "Initial astar state #{fringe_state.to_s}"
     until done
       result = search_astar_step(problem, open_states, closed_states, h_curried)
       if result == :failed_out_of_moves
@@ -83,13 +82,6 @@ class Trainyard_Search_Astar
       elsif result.instance_of?(Array)
         open_states, closed_states = result
         #puts "New_open: #{open_states.size} new_closed: #{closed_states.size}"
-        
-        #if closed_states.size > 10
-          #puts "New_open: #{open_states}"
-          #puts "new_closed: #{closed_states}"
-          #return :closed_too_large
-        #end
-
       else
         raise ArgumentError, "Unexpected result of astar search step: #{result.class}"
       end
@@ -99,9 +91,6 @@ class Trainyard_Search_Astar
   end
   
   def self.search_astar_step(problem, fringe, closed, h_curried)
-    #puts "Fringe count: #{fringe.size} Closed count: #{closed.size}"
-    #return :fringe_too_large if fringe.size > 30
-    #return :closed_too_large if closed.size > 10000
     return :failed_out_of_moves if fringe.size == 0
     first, *rest = *fringe
     return first if first.sstate.state == problem.goal
@@ -144,6 +133,7 @@ class Trainyard_Search_Astar
   end
   
   def self.print_astar_solution(problem, sstatea)
+    #puts sstatea
     puts "Astar Solution found in #{sstatea.sstate.moves.size} moves."
     puts "To get from #{problem.state.to_s} to #{problem.goal.to_s}, apply moves: "
     puts "#{sstatea.sstate.moves.reverse.to_s}"
@@ -200,6 +190,7 @@ class Astar_Solution_State
   
   def initialize(sstate, fvalue)
     raise ArgumentError, "sstate must be a Solution_State", caller unless sstate.instance_of?(Solution_State)
+    #puts "Initialize astar state"
     @sstate = sstate
     @fvalue = fvalue
   end
@@ -233,7 +224,7 @@ class Astar_Solution_State
   end
   
   def <=>(other)
-    raise ArgumentError, "other: #{other} must be a Astar_Solution_State", caller unless other.instance_of?(Astar_Solution_State)
+    return nil unless other.instance_of?(Astar_Solution_State)
     @fvalue <=> other.fvalue
   end
     

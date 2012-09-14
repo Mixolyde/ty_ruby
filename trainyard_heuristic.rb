@@ -38,6 +38,16 @@ class Dijkstra_Sum
   end
   
   def self.dijkstra_all(yard)
+    tracks = yard.list_tracks
+    dijkstra_hash = {}
+    tracks.each{ |track| dijkstra_hash[track] = dijkstra(track, yard) }
+    dijkstra_hash
+  end
   
+  def self.dijkstra(track, yard)
+    tracks_to_count = yard.list_tracks - [track]
+    #puts "tocount: #{tracks_to_count}"
+    [track, :trackname]
+    
   end
 end

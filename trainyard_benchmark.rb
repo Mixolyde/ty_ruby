@@ -12,13 +12,22 @@ def ids_bench
   puts "IDS Problem2 Time elapsed #{time*1000} milliseconds"
 end
 
-def astar_bench
+def astar_bench(desc, problem, heuristic)
   time = Benchmark.realtime do
-      result = Trainyard_Search_Astar.search_astar(Problem.problem5, NotOnGoalCount)
-      Trainyard_Search.print_solution(Problem.problem5, result)
+      result = Trainyard_Search_Astar.search_astar(problem, heuristic)
+      Trainyard_Search_Astar.print_astar_solution(problem, result)
     end
-  puts "A* Problem5 Time NotOnGoalCount elapsed #{time*1000} milliseconds"
+  puts "A* #{desc} elapsed #{time*1000} milliseconds"
 end
 
-ids_bench
-astar_bench
+#ids_bench
+begin 
+  #astar_bench "Problem 1, NotOnGoalCount", Problem.problem1, NotOnGoalCount
+  astar_bench "Problem 2, NotOnGoalCount", Problem.problem2, NotOnGoalCount
+  astar_bench "Problem 3, NotOnGoalCount", Problem.problem3, NotOnGoalCount
+  astar_bench "Problem 4, NotOnGoalCount", Problem.problem4, NotOnGoalCount
+  astar_bench "Problem 5, NotOnGoalCount", Problem.problem5, NotOnGoalCount
+rescue e
+  e.inspect
+  e.backtrace
+end

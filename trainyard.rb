@@ -46,6 +46,21 @@ class Yard < Array
     track_hash = inject({}){ |hash, (track1, track2)| hash[track1] = :track; hash[track2] = :track; hash}
     track_hash.keys
   end
+  
+  def get_neighbor_tracks(track)
+    inject([]) {|neighbors, (left, right)|
+      #for each track, if the left or right is the requested track
+      #add the other to the neighbor list
+      if track == left
+        [right] + neighbors
+      elsif track == right
+        [left] + neighbors
+      else
+        neighbors
+      end
+    }
+
+  end
 end
 
 class State < Hash
@@ -156,8 +171,8 @@ class Problem
   
   def self.problem2
     self.new(Yard.yard2(),
-      State.new( {:t1=>[:engine], :t2=>[:d], :t3=>[:b], :t4=>[:a, :e], :t5=>[:c]} ),
-      State.new( {:t1=>[:engine, :a, :b, :c, :d, :e]} ))
+      State[ {:t1=>[:engine], :t2=>[:d], :t3=>[:b], :t4=>[:a, :e], :t5=>[:c]} ],
+      State[ {:t1=>[:engine, :a, :b, :c, :d, :e]} ])
   end  
   
   def self.problem3
