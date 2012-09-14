@@ -1,0 +1,151 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<meta name="generator" content="Adobe GoLive 4">
+		<title>CIS 681/481 Programming Assignment #1</title>
+	</head>
+
+	<body>
+		<center>
+			
+  <h1>&nbsp;Programming Assignment #1</h1>
+			  <h2 style="margin-bottom: 0;"><i>Due March 8 </i></h2>
+		</center>
+		<p><font size="2"><i>Reminder: Don't ever run more than one lisp process. Always make sure you kill your lisp process before you log out (Use &quot;ps&quot; to see processes, and &quot;kill -9&quot; to kill them). You WILL use up your quota on Strauss if you do not make sure that your processes are DEAD!! Don't print large files on the EECIS printers in the middle of the day, and when you do print something, pick it up immediately!</i></font></p>
+		<p><font size="2"><i>THIS&nbsp;PROGRAM&nbsp;WILL&nbsp;TAKE&nbsp;MOST&nbsp;STUDENTS&nbsp;NON-TRIVIAL&nbsp;AMOUNTS&nbsp;OF&nbsp;TIME. START&nbsp;EARLY!!!!</i></font></p>
+		<h3>The Switch Problem</h3>
+		<p>Consider the problem of manuvering railroad cars in a train yard. Many cars must be assembled into a tain of cars in a given order, but the cars start out dispersed throughout the yard, and can only move in prescribed ways on existing track.</p>
+		<p>Below is an example of a small train yard with sufficient connectivity to arrange railroad cars into any desired sequence. The different sections of track have been numbered from 1 to 6. The figure also shows the starting position for a small train, where each car is represented by a lowercase letter, and the engine is represented by an asterisk &quot;*&quot;. Finally, we show the same cars in the goal position, with the cars lined up in order for a departure to the west.</p>
+		<p><img src="Resources/prog1a.gif" height="183" width="695"></p>
+		<h4>Representing the Problem in Lisp</h4>
+		<p>We can represent train yard connectivity in a Lisp list. The simple nature of train yards used in this assignment allows us to describe the yard as a list of right and left edges connected by vertices (in the real world, such vertices are called &quot;switches&quot; :-) Thus, because the right edge of track 1 connects to the left edges of tracks 2 and 3, we find the sublists (1 2) and (1 3) included on our yard vertex list.</p>
+		<pre style="margin-bottom: 0;">(defparameter *yard-1* '((1 2) (1 3) (3 5) (4 5) (2 6) (5 6)))</pre>
+		<p>The state information can be kept as a list of the cars on each section of the track in their respective orders. The <tt>first</tt> element is <tt>(*)</tt>, indicating only the engine is on track 1, and the <tt>sixth</tt> element is <tt>(d)</tt> because only car d is on track 6. Note that when there's more than one car on a track, they are listed left-to-right.</p>
+		<p><tt>(defparameter *initial-state-1* '((*) (e) NIL (b c a) NIL (d)))</tt></p>
+		<p><tt>(defparameter *goal-state-1* '((* a b c d e) NIL NIL NIL NIL NIL))</tt></p>
+		<h4>Rules of Movement</h4>
+		<p>The following rules describe motion 
+  in the train yard (DIRECTION FROM-TRACK TO-TRACK):<br>
+		&nbsp;</p>
+		<ul>
+  <li> 
+    <div align="left">If the connectivity list contains a sublist (x y) and either 
+      track x or track y contains the engine, then the first car of track y can 
+      be removed from track y and placed at the end of track x.&nbsp; We call 
+      this a &quot;LEFT&quot; move; so if (1 2) is on the connectivity list, we 
+      can move from state ((*) (e)) to state ((*e) NIL), or from state ((a*b) 
+      (cd)) to state ((a*bc) (d)). We will notate this below as &quot;<tt>(left 
+      y x)</tt>&quot; --<strong>note the transposition of y and x</strong>-- meaning 
+      move one car from the front of track y leftward to the end of track x. <br>
+      <br>
+      <img src="images/yard-LEFT.jpg" width="534" height="101"><br>
+    </div>
+  <li>If the connectivity list contains the sublist (x y) and either track x or 
+    track y contains the engine, then the last car of track x an be removed from 
+    track x and placed at the front of track y. We call this a &quot;RIGHT&quot; 
+    move; so if (1 2) is on the connectivity list, then a legal move from ((*) 
+    (e)) is to (NIL (*e)), and a legal move from state ((a*b) (cd)) is to ((a*) 
+    (bcd)). Note that only one symbol moves each time (the engine must have pushed 
+    car b right and then returned to track 1). We will notate this as &quot;<tt>(right 
+    x y)</tt>&quot; below, meaning move one car rightward from track x to track 
+    y. <br>
+    <br>
+    <img src="images/yard-RIGHT.jpg" width="551" height="103"><br>
+  <li>No other moves are allowed; cars cannot move without using the engine, jump 
+    over other cars, or teleport from one track to another. 
+</ul>
+		<h3>PROBLEM 1 [10 pts]</h3>
+		<p>Write a Lisp function <tt>possible-moves</tt> that generates a list of all moves possible in a given train yard and in a given state. Run your function on at least three different yards and two different states for each yard, including the two large yards and initial states described pictorially in this handout.</p>
+		<p style="margin-bottom: 0;">Hints: A move might be represented 
+  by a triple <tt>(right 4 5)</tt> that means &quot;move the car at the right 
+  end of track 4 to the left end of track 5, and a triple like <tt>(left 5 3)</tt> 
+  for movement in the other direction. One way to find possible moves is to use 
+  the venerable AI technique &quot;generate and test&quot;--- generate all possible 
+  moves and then test to see if they are actually legal. If you write a function 
+  to generate all moves (<tt>all-moves state</tt>), and a predicate to test if 
+  a move is legal (<tt>illegal-move-p move yard state</tt>), then the lisp function 
+  <tt>remove-if</tt> supplies the final filter procedure (&quot;filtering&quot; 
+  is a common programming paradigm taught in CISC-280). In fact, if you do it 
+  this way, then &quot;possible-moves&quot; is only one line long :-)<br>
+</p>
+		<ul style="margin-top: 0;">
+  <tt>&gt; (possible-moves *yard-1* *goal-state-1*)</tt><br>
+  <tt>((right 1 2) (right 1 3))</tt> 
+  <p style="margin-bottom: 0"><tt>&gt; (possible-moves *yard-1* *initial-state-1*)</tt><br>
+    <tt>((right 1 2) (right 1 3) (left 2 1))</tt></p>
+</ul>
+		<h2>PROBLEM 2 [10 pts]</h2>
+		<p>Write a Lisp function <tt>(apply-move&nbsp;&nbsp; 
+  move&nbsp;&nbsp; state)</tt> that takes two inputs, a move like &quot;<tt>(left 
+  5 3)</tt>&quot; and a state (as defined above) and produced the NEW STATE that 
+  will result after actually doing the input move in the input state. <i>Be certain 
+  that you do NOT accidentally modify the input state variable!!! </i>Also, I've 
+  never seen a &quot;clean&quot; solution to this, you just have to do it by cases. 
+  It's ugly! Sorry!</p>
+		<ul style="margin-bottom: 0;">
+  <tt>&gt; (apply-move '(left 2 1) *initial-state-1*)</tt><br>
+  <tt>((* E) NIL NIL (B C A) NIL (D))</tt> 
+  <p style="margin-bottom: 0"><tt>&gt; (apply-move '(right 1 2) *initial-state-1*)</tt><br>
+    <tt>(NIL (* E) NIL (B C A) NIL (D))</tt><br>
+    &nbsp;</p>
+</ul>
+		<h2 style="margin-top: 0;">PROBLEM 3 [10 pts]</h2>
+		<p style="margin-bottom: 0;">Write a Lisp function (expand state 
+  yard) that takes two inputs, a state and a yard, and returns a list of all states 
+  that can be reached in one move (operator) from the input state.&nbsp; This 
+  is a trivial extension of Problems 1 and 2.&nbsp; TEST YOUR SOLUTION ON SEVERAL 
+  YARDS AND STATES!!!<br>
+  &nbsp;</p>
+		<ul style="margin-top: 0;">
+			<tt>&gt;(expand *initial-state-1* *yard-1*)</tt><br>
+			<tt>((NIL (* E) NIL (B C A) NIL (D))</tt><br>
+			<tt>&nbsp;(NIL (E) (*) (B C A) NIL (D))</tt><br>
+			<tt>&nbsp;((* E) NIL NIL (B C A) NIL (D)))</tt>
+		</ul>
+		<h3>PROBLEM 4 [30 pts]</h3>
+		<p>Write a program that takes a connectivity 
+  list (yard), an initial state, and a goal state as inputs, and <strong><em>generates 
+  a list of moves that take the cars in the initial state into the goal state</em></strong>.</p>
+		<p>Use a blind search method. <i><b>Briefly justify your choice.</b></i></p>
+		<p>Test your program on the following problem, *yard-2*. NOTE:&nbsp; You should of course try the little tiny yards, yard-3 and yard-4, listed at the bottom of this assignment, before trying yard-2. Do NOT try to do yard-1 with blind search!!!</p>
+		<p><i>Picture of Yard 2:</i></p>
+		<p><img src="Resources/prog1b.gif" height="114" width="694"></p>
+		<h3>PROBLEM 5 [10 pts]</h3>
+		<p>How big is the search space [state 
+  space]??</p>
+		<h3>PROBLEM 6 [30 pts]</h3>
+		<p>Now describe at least one heuristic. Write a new search program to do a heuristic search (A* or IDA*). Run your program again on the same yards. You should expect a speedup of at least 2 or 3 times. You might want to take advantage of symmetry, checking for repeated states, etc. My A* search on yard-2 takes a bit under 30 seconds. You might not be able to solve yard-1 at all unless your heuristic is very good or you are very efficient. (Undergraduates don't <i>have</i> to solve yard-1).</p>
+		<p>The lisp function <tt>(time x)</tt> can be used to time how long it takes to compute x, for example <tt>(time (my-search *yard-2* *initial-state-2* *goal-state-2*))</tt>.</p>
+		<p>In order to keep track of the number of states expanded in your two algorithms, you could use a global variable <tt>*expansions*</tt>, <tt>incf</tt>'d from within the <tt>expand </tt>lisp fn, and set to 0 at the start of your searches.</p>
+		<h3>NOTES</h3>
+		<p>These problems are &quot;hard&quot; 
+  computationally. Make sure your code works on simple train yards of your own 
+  devising first. Also, you'll need to <strong>compile</strong> your code. <strong>Interpreted 
+  (evaluated) code will never solve the larger problems</strong>. Make sure to 
+  DEBUG your code BEFORE compiling it!!!</p>
+		<p>Here's two simpler problem to test 
+  code on before trying a hard problem. Don't <i>EVEN</i> think of trying *yard-1* 
+  or *yard-2* unless you can solve these trivial yards!!!</p>
+		<ul>
+  <tt>(defparameter *yard-3* '((1 2) (1 3)))</tt><br>
+  <tt>(defparameter *init-state-3* '((*) (a) (b)))</tt><br>
+  <tt>(defparameter *goal-state-3* '((* a b) NIL NIL))</tt> 
+  <p><tt>(defparameter *yard-4* '((1 2) (1 3) (1 4)))</tt><br>
+    <tt>(defparameter *init-state-4* '((*) (a) (b c) (d)))</tt><br>
+    <tt>(defparameter *goal-state-4* '((* a b c d) NIL NIL NIL))</tt></p>
+  <p style="margin-bottom: 0;"><tt>(defparameter *yard-5* '((1 
+    2) (1 3) (1 4)))</tt><br>
+    <tt>(defparameter *init-state-5* '((*) (a) (c b) (d)))</tt>&nbsp;&nbsp; ;Note 
+    c and b out of order<br>
+    <tt>(defparameter *goal-state-5* '((* a b c d) NIL NIL NIL))</tt></p>
+</ul>
+		<p>Comment you code appropriately. That's part of your grade here.</p>
+		<p>Provide output traces, even if you can only solve smaller problems than the ones here. YOU MUST TURN IN HARDCOPY FOR GRADING.</p>
+		<p>Unprotect your file and tell us where 
+  the code is, or send an email copy to our TA, so that he can run it. Your code 
+  should run on similar inputs other than the 4 shown here!!! 
+</body>
+
+</html>
