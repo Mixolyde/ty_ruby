@@ -140,6 +140,13 @@ class State < Hash
     return newState  
   end
   
+  def locate_car(car)
+    each(){| (track, track_cars) |
+      return track if track_cars.member?(car)
+    }
+    :error_car_not_found
+  end
+  
 end
 
 class Problem

@@ -26,17 +26,17 @@ class DataStructureTest < Test::Unit::TestCase
     assert_equal(3, Yard.yard1.get_neighbor_tracks(:t5).size)
     assert_equal(2, Yard.yard1.get_neighbor_tracks(:t6).size)
     
-    puts "Track list: #{Yard.yard1.list_tracks}"
+    #puts "Track list: #{Yard.yard1.list_tracks}"
   end
   
   def test_states
     # test generation and printing of the hash
     initial_state1 = State[ [ [:t1, [:engine]], [:t2, [:e]], [:t4, [:b, :c, :a]], [:t6, [:d]] ] ]
-    puts "Initial :t1 #{initial_state1[:t1]}"
-    puts "Test Initial 1: " + initial_state1.to_s
+    #puts "Initial :t1 #{initial_state1[:t1]}"
+    #puts "Test Initial 1: " + initial_state1.to_s
     assert_equal(4, initial_state1.length)
     goal_state1 = State[[ [:t1, [:engine, :a, :b, :c, :d, :e]] ]]
-    puts "Test Goal 1:    " + goal_state1.to_s
+    #puts "Test Goal 1:    " + goal_state1.to_s
     assert_equal(1, goal_state1.length)
     
     assert_equal([], goal_state1.cars_on_track(:t2))
@@ -92,6 +92,18 @@ class DataStructureTest < Test::Unit::TestCase
     possibles1.each{ |move|
       assert_equal(problem1.state, 
         problem1.state.apply_move!(move).reverse_move!(move)) }
+    
+  end
+  
+  def test_locate_car
+    state1 = State[[[:t1, [:engine]], [:t2, [:e]], [:t4, [:b, :c, :a]], [:t6, [:d]]]]
+    assert_equal(:error_car_not_found, state1.locate_car(:not_in_state) )
+    assert_equal(:t1, state1.locate_car(:engine) )
+    assert_equal(:t2, state1.locate_car(:e) )
+    assert_equal(:t4, state1.locate_car(:b) )
+    assert_equal(:t4, state1.locate_car(:c) )
+    assert_equal(:t4, state1.locate_car(:a) )
+    assert_equal(:t6, state1.locate_car(:d) )
     
   end
 end
@@ -294,9 +306,56 @@ class Heuristic_Test < Test::Unit::TestCase
     
   end
   
+  def test_dijkstra_sum
+    test_data = [[12, Problem.problem1], [8, Problem.problem2], [2, Problem.problem3], [4, Problem.problem4], [4, Problem.problem5]]
+    test_data.each(){ | (test_fvalue, test_problem) |
+      assert_equal(test_fvalue, Dijkstra_Sum.calculate_fvalue(test_problem.state, test_problem.goal, test_problem.yard))
+    }
+  end
+  
   def test_dijkstra_all
-    dijkstra_hash = Dijkstra_Sum.dijkstra_all(Yard.yard1)
-    puts "Dijkstra_hash: #{dijkstra_hash}"
+    track_list = Yard.yard1.list_tracks
+    dijkstra_all_hash = Dijkstra_Sum.dijkstra_all(Yard.yard1)
+    assert_equal(track_list.size, dijkstra_all_hash.keys.size)
+    assert_equal(track_list.size, dijkstra_all_hash[dijkstra_all_hash.keys.first].size)
+    
+    
+    puts "Dijkstra_all_hash: #{dijkstra_all_hash}"
+    
+  end
+  
+  def test_dijkstra
+    # test each track in a yard
+    yard = Yard.yard1
+    track_list = yard.list_tracks
+    track_list.each(){|track|
+      # create the distance hash
+      dijkstra_hash = Dijkstra_Sum.dijkstra(track, yard)
+      assert(dijkstra_hash.instance_of?(Hash))
+      assert_equal(track_list.size, dijkstra_hash.keys.size)
+      # test the easy calculables
+      assert_equal(0, dijkstra_hash[track])
+      neighbors = yard.get_neighbor_tracks(track)
+      neighbors.each() {|neighbor|
+        assert_equal(1, dijkstra_hash[neighbor])
+      }
+      #puts "Dijkstra_hash: #{dijkstra_hash}"
+    }
+      
+  end
+  
+  def test_get_neighbor_distances
+    yard = Yard.yard1
+    
+    assert_equal(2, Dijkstra_Sum.get_neighbor_distances(yard, :t1, 0).size)
+    assert_equal(2, Dijkstra_Sum.get_neighbor_distances(yard, :t2, 1).size)
+    assert_equal(2, Dijkstra_Sum.get_neighbor_distances(yard, :t3, 2).size)
+    assert_equal(1, Dijkstra_Sum.get_neighbor_distances(yard, :t4, 3).size)
+    assert_equal(3, Dijkstra_Sum.get_neighbor_distances(yard, :t5, 4).size)
+    assert_equal(2, Dijkstra_Sum.get_neighbor_distances(yard, :t6, 5).size)
+    (track, distance) = Dijkstra_Sum.get_neighbor_distances(yard, :t4, 5).first
+    assert_equal(:t5, track)
+    assert_equal(6, distance)
     
   end
 end
