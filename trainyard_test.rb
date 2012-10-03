@@ -358,6 +358,42 @@ class Heuristic_Test < Test::Unit::TestCase
     assert_equal(6, distance)
     
   end
+  
+  def test_out_of_order_sum
+    test_data = [[0, Problem.problem1], [0, Problem.problem2], [0, Problem.problem3], [0, Problem.problem4], [0, Problem.problem5]]
+    test_data.each(){ | (test_fvalue, test_problem) |
+      assert_equal(test_fvalue, Out_Of_Order.calculate_fvalue(test_problem.state, test_problem.goal, test_problem.yard))
+    }
+    
+    
+  end
+  
+  def test_out_of_order_track
+    assert_equal(0, Out_Of_Order.out_of_order_track([:engine, :a], [:engine, :a]))
+    assert_equal(0, Out_Of_Order.out_of_order_track([:engine, :a, :b], [:engine, :a]))
+    
+    assert_equal(0, Out_Of_Order.out_of_order_track([:engine, :a, :b], [:engine, :b]))
+    
+    assert_equal(0, Out_Of_Order.out_of_order_track([:engine, :a, :b], [:a, :b]))
+    assert_equal(0, Out_Of_Order.out_of_order_track([:d], [:a, :b, :c]))
+    
+    assert_equal(1, Out_Of_Order.out_of_order_track([:engine, :a, :b], [:b, :a]))
+    assert_equal(1, Out_Of_Order.out_of_order_track([:engine, :a], [:a, :engine]))
+    assert_equal(3, Out_Of_Order.out_of_order_track([:c, :b, :a], [:a, :b, :c]))
+    assert_equal(2, Out_Of_Order.out_of_order_track([:c, :b, :a], [:a, :c, :b]))
+    
+    assert_equal(10, Out_Of_Order.out_of_order_track([:e, :d, :c, :b, :a], [:a, :b, :c, :d, :e]))
+    
+    assert_equal(15, Out_Of_Order.out_of_order_track([:f, :e, :d, :c, :b, :a], [:a, :b, :c, :d, :e, :f]))
+  end
+  
+  def test_dijkstra_sum_plus_out_of_order
+    test_data = [[12, Problem.problem1], [8, Problem.problem2], [2, Problem.problem3], [4, Problem.problem4], [4, Problem.problem5]]
+    test_data.each(){ | (test_fvalue, test_problem) |
+      assert_equal(test_fvalue, DSumAndOOO.calculate_fvalue(test_problem.state, test_problem.goal, test_problem.yard))
+    }
+  end
+  
 end
   
 class Astar_Search_Test < Test::Unit::TestCase

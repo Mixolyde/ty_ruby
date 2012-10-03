@@ -85,8 +85,71 @@ end
 
 class Out_Of_Order
   def self.calculate_fvalue(state, goal, yard)
-    dijkstra_total = goal.inject(0){|sum, (goal_track, goal_cars) |
-    
+    #for each track in the goal state with cars on it
+    ooo_total = goal.inject(0) {|sum, (goal_track, goal_cars) |
+      current_cars = state.cars_on_track(goal_track)
+      #if there are enough cars to consider in goal_cars and current_cars, check for out of order
+      if goal_cars.length > 1 and current_cars.length > 0 and goal_cars != current_cars
+        sum += out_of_order_track(current_cars, goal_cars)
+      end
+      # return current sum to the accumulator
+      sum
     }
+    ooo_total
   end
+  
+  # (* 1 2 3 4 5)  goal
+  # (5 4 3 2 1 *)  current  
+  def self.out_of_order_track(track_cars, goal_cars)
+    return 0 if goal_cars.length < 2 or track_cars.length < 1
+    #for each goal_car
+    current_goal_cars = goal_cars.clone
+    # starting sum
+    sum = 0
+    
+    until current_goal_cars.length == 0
+      current_goal_car = current_goal_cars.shift
+      # if the goal car appears in current track
+      goal_index = track_cars.index(current_goal_car)
+      if goal_index
+        # for each of the cars after the goal car 
+        sum += current_goal_cars.inject(0){ |checksum, goal_car_check|
+          # if they appear in the current track before the goal car 
+          # they are out of order
+          check_index = track_cars.index(goal_car_check)
+          if check_index and check_index < goal_index
+            checksum += 1
+          end
+          checksum
+        }
+      end
+    end
+    # return the total out of order count
+    sum
+  end
+  
+    def self.out_of_order_track_2(track_cars, goal_cars)
+      return 0 if goal_cars.length < 2 or track_cars.length < 1
+      #for each track_car
+      
+      track_sum = track_cars.inject(0){ |sum, track_car|
+        if goal_cars.member?(track_car) and 
+          track_cars.index(track_car) != goal_cars.index(track_car)
+          sum += 2
+        end
+        sum
+      }
+      
+      track_sum
+      
+    end
+
+end
+
+class DSumAndOOO
+  def self.calculate_fvalue(state, goal, yard)
+    # add the sum to the out of order count for the best heuristic EVAR!
+    Dijkstra_Sum.calculate_fvalue(state, goal, yard) + Out_Of_Order.calculate_fvalue(state, goal, yard)
+  end
+
 end

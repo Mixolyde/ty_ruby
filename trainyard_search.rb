@@ -72,7 +72,7 @@ class Trainyard_Search_Astar
     open_states = [fringe_state]
     closed_states = []
     done = false
-    puts "Initial astar state #{fringe_state.to_s}"
+    #puts "Initial astar state #{fringe_state.to_s}"
     until done
       result = search_astar_step(problem, open_states, closed_states, h_curried)
       if result == :failed_out_of_moves
