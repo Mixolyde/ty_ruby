@@ -11,7 +11,7 @@ Files:
 * trainyard_test - unit tests for all of the above
 * trainyard_benchmark - simple timing methods for benchmarking the search solutions
 
-I'm considering this project done, althought nearly ten minutes for the big problem
+I'm considering this project done, although nearly ten minutes for the big problem
 isn't great. There are other problems to solve!
 
 Statistics from the benchmark:
